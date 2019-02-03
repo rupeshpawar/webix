@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="webix.css" type="text/css" charset="utf-8">
+    <script src="webix.js" type="text/javascript" charset="utf-8"></script>
+</head>
+
+<body>
+    <script type="text/javascript" charset="utf-8">
+        webix.ready(function () {
+
+            webix.protoUI({
+                name:"canvas",
+                defaults: {
+                    cols: []
+                },
+                $init: function (config) {
+                    this.$ready.push(this._Init);
+                },
+                _Init: function () {
+                    var me = this;
+                    var config = me.config;
+                    me.addView({
+                        cols: [
+                            { view: "label", gravity: 1.2, value: "Manager" }
+                        ]
+                    });
+                }
+                }, webix.ui.toolbar, webix.EventSystem);
+
+            function show_roles() {
+
+                function add_role() {
+                    var value = $$("value").getValue();
+                    webix.ajax().post("api/role/save", { name: value }, function (text, xml, xhr) {
+                        console.log(JSON.parse(text)._id);
+                        $$("rolesdata").add({
+                            name: value,
+                            id: JSON.parse(text)._id
+                        })
+                        $$("value").setValue("");
+                    });
+                }
+                webix.ui({
+                    view: "popup",
+                    width: 500,
+                    height: 500,
+                    id: "roles_popup",
+                    position: "center",
+                    on: {
+                        "onHide": function (id) {
+                            console.log("qwdqe");
+                            $$("userrole").render();
+                            // $$("userrole").load("api/role/roleForOptions");
+                        }
+                    },
+                    body: {
+                        rows: [
+                            {
+                                rows: [
+                                    {
+                                        cols: [
+                                            { view: "text", id: "value", placeholder: "Role Name" },
+                                            { view: "button", value: "Add new role", click: add_role }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                container: "testA",
+                                view: "datatable",
+                                id: "rolesdata",
+                                columns: [
+                                    { id: "name", header: "Roles", editor: "text", width: 400 },
+                                    {
+                                        id: "", template: "<input class='delbtn' type='button' value='Delete'>",
+                                        css: "padding_less", width: 100
+                                    }
+                                ],
+                                autowidth: true,
+                                url: "/api/role",
+                                select: "cell",
+                                autoheight: true,
+                                editable: true,
+                                onClick: {
+                                    "delbtn": function (ev, id, trg) {
+                                        // webix.message("Delete row: " + id);
+                                        var that = this;
+                                        webix.ajax().post("api/role/delete", { id: id }, function (text, xml, xhr) {
+                                            //response
+                                            console.log(text);
+                                            that.clearAll();
+                                            that.load("/api/role");
+                                            // webix.message("Delete row: " + text);
+                                        });
+                                    }
+                                },
+                                ready: function () {
+                                    this.editColumn("name");
+                                    this.attachEvent("onBeforeEditStop", function () { return false; });
+                                    this.attachEvent("onEditorChange", function (id, value) {
+                                        var that = this;
+                                        webix.ajax().post("api/role/update", { id: id, name: value }, function (text, xml, xhr) {
+                                            that.getItem(id.row)[id.column] = value;
+                                            that.refresh(id.row);
+                                        });
+
+                                    });
+                                }
+                            }
+                        ]
+
+                    }
+                }).show();
+
+            }
+            function save_user() {
+                var values = $$("userForm").getValues();
+                console.log(values);
+                if (values.id) {
+
+                    webix.ajax().post("api/user/update", { data: values }, function (text, xml, xhr) {
+                        $$("usersdata").clearAll();
+                        $$("usersdata").load("/api/user");
+                    });
+
+                } else {
+
+                    webix.ajax().post("api/user/save", { data: values }, function (text, xml, xhr) {
+                        console.log(JSON.parse(text)._id);
+                        values.id = JSON.parse(text)._id;
+                        $$("usersdata").add(values);
+                    });
+                }
+                $$("userForm").clear()
+
+            }
+            webix.ui({
+                type: "line",
+                rows: [
+                    {
+                        view: "toolbar", elements: [
+                            { view: "button", value: "Roles", width: 70, click: show_roles }
+                        ]
+                    },
+                    {
+                        cols: [
+                            {
+                                container: "testB",
+                                view: "datatable",
+                                id: "usersdata",
+                                columns: [
+                                    { id: "name", header: "Name", editor: "text", width: 200 },
+                                    { id: "email", header: "Email", editor: "text", width: 200 },
+                                    { id: "userrole", header: "Role", editor: "text", width: 200 },
+                                    {
+                                        id: "", template: "<input class='delbtn' type='button' value='Delete'>",
+                                        css: "padding_less", width: 100
+                                    }
+                                ],
+                                autowidth: true,
+                                url: "/api/user",
+                                select: "cell",
+                                autoheight: true,
+                                onClick: {
+                                    "delbtn": function (ev, id, trg) {
+                                        var that = this;
+                                        webix.ajax().post("api/user/delete", { id: id }, function (text, xml, xhr) {
+                                            that.clearAll();
+                                            that.load("/api/user");
+                                        });
+                                    }
+                                },
+                                ready: function () {
+                                    this.editColumn("name");
+                                    this.attachEvent("onBeforeEditStop", function () { return false; });
+                                    this.attachEvent("onEditorChange", function (id, value) {
+                                        var that = this;
+                                        webix.ajax().post("api/user/update", { id: id, name: value }, function (text, xml, xhr) {
+                                            that.getItem(id.row)[id.column] = value;
+                                            that.refresh(id.row);
+                                        });
+
+                                    });
+                                },
+                                on: {
+                                    "onAfterSelect": function (id) {
+                                        const item = $$("usersdata").getItem(id);
+                                        $$("userForm").setValues(item);
+                                    }
+                                },
+                            },
+                            {
+                                view: "form", id: "userForm", width: 300, elements: [
+                                    { view: "text", name: "name", placeholder: "Name", width: 200, align: "center" },
+                                    { view: "text", name: "email", placeholder: "Email", width: 200, align: "center" },
+                                    { view: "select", id: "userrole", name: "userrole", options: "api/role/roleForOptions", label: "Role" },
+                                    {
+                                        cols: [
+                                            { view: "button", value: "Save", click: save_user },
+                                            { view: "button", value: "Clear", click: () => $$("userForm").clear() }
+                                        ]
+                                    },
+                                    {
+                                        view: "canvas", height:200, width:200
+                                    }
+                                ]
+                            }
+
+                        ]
+                    }
+                ]
+            });
+        });
+    </script>
+</body>
+
+</html>
