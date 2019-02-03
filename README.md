@@ -161,19 +161,3 @@ If you would prefer not to use any of our tooling, delete the following files fr
 
 * [Gulp recipes](https://github.com/gulpjs/gulp/tree/master/docs/recipes) - the official Gulp recipes directory includes a comprehensive list of guides for different workflows you can add to your project.
 
-## Contributing
-
-Contributions, questions and comments are all welcome and encouraged. For code contributions submit a pull request with unit test.
-
-## License
-This project is licensed under the [MIT License](https://github.com/KunalKapadia/express-mongoose-es6-rest-api/blob/master/LICENSE)
-
-## Support Development
-If this project saved your valuable time in getting your service up, and you feel like buying me coffee, you can donate either at my BTC address: `1LkW5UoERR1jjJsChMheKuo6vn95x2mzWg` or at [![Support via Paypal](https://img.shields.io/badge/support-paypal-yellowgreen.svg?style=flat-square)](https://www.paypal.me/KunalKapadia)
-
-Your support is greatly appreciated.
-
-## Meta
-
-Kunal Kapadia – [@kunalkapadia12](https://twitter.com/KunalKapadia12) – kunalkapadia12@gmail.com
-
